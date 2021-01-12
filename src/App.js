@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Styled from "styled-components";
 
 const AppDiv = Styled.div`
@@ -9,11 +9,18 @@ const AppDiv = Styled.div`
       margin-top: 30vh;
       margin-left: auto;
       margin-right: auto;
-      width: 400px;
+      width: 100px;
+      text-align: center;
   
-      ul {
+      .time-label {
         display: grid;
         grid-template-columns: repeat(3, 33%);
+        padding-left: 0;
+        text-align: center;
+        list-style: none;
+      }
+
+      .time-count {
         padding-left: 0;
         text-align: center;
         list-style: none;
@@ -21,12 +28,12 @@ const AppDiv = Styled.div`
     }
 
     .watch-controls {
-      display: grid;
-      grid-template-columns: repeat(3, 33%);
+      display: flex;
+      justify-content: space-around;
       margin-top: 24px;
       margin-left: auto;
       margin-right: auto;
-      width: 400px;
+      width: 100px;
 
       button {
         border: 1px solid gray;
@@ -40,55 +47,96 @@ const AppDiv = Styled.div`
           color: black
         }
       }
+      .none {
+        display: none;
+      }
     }
   }
 `
 
 const App = () => {
-  const [time, updateTime] = useState(
-    {
-      hours: 0,
-      minutes: 0,
-      seconds: 0
-    }
-  );
+  const [timer, setTimer] = useState(0)
+  const [isActive, setIsActive] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+  const countRef = useRef(null)
 
-  const addTime = () => {
-    updateTime(
-      {
-        hours: time.hours,
-        minutes: time.minutes,
-        seconds: time.seconds+1
-      }
-    );
+  const handleStart = () => {
+    setIsActive(true)
+    setIsPaused(false)
+    countRef.current = setInterval(() => {
+      setTimer((timer) => timer + 1)
+    }, 1000)
+  };
+
+  const handlePause = () => {
+    clearInterval(countRef.current)
+    setIsPaused(true)
+  };
+
+  const handleResume = () => {
+    setIsPaused(false)
+    countRef.current = setInterval(() => {
+      setTimer((timer) => timer + 1)
+    }, 1000)
+  };
+
+  const handleClear = () => {
+    clearInterval(countRef.current)
+    setIsActive(false)
+    setIsPaused(false)
+    setTimer(0)
+  };
+
+  const renderStart = () => {
+    if (isActive === false) {
+      return "start";
+    }
+    else {
+      return "none";
+    }
+  };
+
+  const renderPause = () => {
+    if (isActive === true && isPaused === false) {
+      return "pause";
+    }
+    else {
+      return "none";
+    }
+  };
+
+  const renderResume = () => {
+    if (isActive === true && isPaused === true) {
+      return "resume";
+    }
+    else {
+      return "none";
+    }
+  };
+
+  const renderClear = () => {
+    if (isActive === true && isPaused === true) {
+      return "clear";
+    }
+    else {
+      return "none";
+    }
   };
 
   return (
     <AppDiv>
       <div className="watch">
         <div className="watch-time">
-          <ul className="time-label">
-            <li>hr</li>
-            <li>min</li>
-            <li>sec</li>
-          </ul>
+          <h1>timer</h1>
           <ul className="time-count">
-            <li>{time.hours}</li>
-            <li>{time.minutes}</li>
-            <li>{time.seconds}</li>
+            <li>{timer}</li>
           </ul>
         </div>
         <div className="watch-controls">
-          <button className="start" onClick={() => addTime()}>Start</button>
-          <button className="stop">Stop</button>
-          <button className="clear" 
-            onClick={() => updateTime({
-              hours: 0,
-              minutes: 0,
-              seconds: 0
-            })}>
-            Clear
-          </button>
+          <button className={renderStart()} onClick={() => handleStart()}>Start</button>
+          <button className={renderPause()} onClick={() => handlePause()}>Pause</button>
+          <button className={renderResume()} onClick={() => handleResume()}>Resume</button>
+          <button className={renderClear()} onClick={() => handleClear()}>Clear</button>
         </div>
       </div>
     </AppDiv>
